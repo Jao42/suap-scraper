@@ -97,3 +97,7 @@ soup = BeautifulSoup(html_content, 'html.parser')
 with open('boletim_html.txt', 'w') as arq:
   arq.write(str(soup.tbody))
 
+
+
+
+
