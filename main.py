@@ -2,11 +2,13 @@ import requests
 import sys
 from os import environ
 from bs4 import BeautifulSoup
+from limpar_dados import sanitizar_saida
+import json
+import time
 
 session = requests.Session()
-req = requests.Request('GET', 'https://suap.ifpb.edu.br')
-req = req.prepare()
-res = session.send(req)
+res = session.get('https://suap.ifpb.edu.br')
+
 matricula = environ['SUAP_MATRICULA']
 senha = environ['SUAP_SENHA']
 
@@ -36,7 +38,7 @@ headers = {
 
 body = "csrfmiddlewaretoken="+ middleware_csrf +"&username="+matricula+"&password="+senha+"&this_is_the_login_form=1&next=%2F"
 
-json = {
+req_json = {
   "referrer": "https://suap.ifpb.edu.br",
   "referrerPolicy": "same-origin",
   "method": "POST",
@@ -44,7 +46,7 @@ json = {
   "credentials": "include"
 }
 
-req = requests.Request("POST", "https://suap.ifpb.edu.br/accounts/login/?next=/", headers=headers, data=body, json=json, cookies={
+req = requests.Request("POST", "https://suap.ifpb.edu.br/accounts/login/?next=/", headers=headers, data=body, json=req_json, cookies={
   'csrftoken': csrf, 'sessionid': session_id
   })
 
@@ -53,13 +55,15 @@ req = requests.Request("POST", "https://suap.ifpb.edu.br/accounts/login/?next=/"
 req = req.prepare()
 res = session.send(req)
 
+time.sleep(2)
 #segunda req ^^
 
 try:
   session_id = res.cookies['sessionid']
-except:
-  pass
-  print('Falha autenticação')
+except Exception as e:
+  print(res.text)
+  session.close()
+  print('Falha autenticação:', e)
   sys.exit(1)
 try:
   csrf = res.cookies['csrftoken']
@@ -75,29 +79,32 @@ headers = {
     "sec-gpc": "1",
     "x-requested-with": "XMLHttpRequest"
   }
-json = {
-  "referrer": "https://suap.ifpb.edu.br/edu/aluno/"+matricula+"/?tab=boletim&&ano_periodo=2020_1",
+req_json = {
+  "referrer": "https://suap.ifpb.edu.br/edu/aluno/"+matricula+"/?tab=boletim",
   "referrerPolicy": "same-origin",
   "method": "GET",
   "mode": "cors",
   "credentials": "include"
   }
 
-req = requests.Request("GET", "https://suap.ifpb.edu.br/edu/aluno/"+matricula+"/?tab=boletim&ano_periodo=2020_1", cookies={'sessionid': session_id, 'csrftoken': csrf}, headers=headers, json=json)
+req = requests.Request("GET", "https://suap.ifpb.edu.br/edu/aluno/"+matricula+"/?tab=boletim", cookies={'sessionid': session_id, 'csrftoken': csrf}, headers=headers, json=req_json)
 req = req.prepare()
 res = session.send(req)
 
 #terceira req ^^
-
 #tratar dados
+
 html_content = res.text
+session.close()
 soup = BeautifulSoup(html_content, 'html.parser')
 
 
 with open('boletim_html.txt', 'w') as arq:
   arq.write(str(soup.tbody))
 
-
-
-
+dic_materias = sanitizar_saida("boletim_html.txt")
+with open('boletim.json', 'w') as arq:
+  arq.write(
+    json.dumps(dic_materias, sort_keys=True, indent=2, ensure_ascii=False)
+  )
 

@@ -31,10 +31,11 @@ def sanitizar_saida(arq):
   return materias
 
 
-dic_materias = sanitizar_saida("boletim_html.txt")
-with open('boletim.json', 'w') as arq:
-  arq.write(
-    json.dumps(dic_materias, sort_keys=True, indent=2, ensure_ascii=False)
-  )
+if __name__ == '__main__':
+  dic_materias = sanitizar_saida("boletim_html.txt")
+  with open('boletim.json', 'w') as arq:
+    arq.write(
+      json.dumps(dic_materias, sort_keys=True, indent=2, ensure_ascii=False)
+    )
 
 
