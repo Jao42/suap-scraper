@@ -38,4 +38,3 @@ if __name__ == '__main__':
       json.dumps(dic_materias, sort_keys=True, indent=2, ensure_ascii=False)
     )
 
-

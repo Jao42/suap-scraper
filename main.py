@@ -9,6 +9,7 @@ import time
 matricula = environ['SUAP_MATRICULA']
 senha = environ['SUAP_SENHA']
 session = requests.Session()
+session.headers.update({'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36.'})
 
 def initialPageRequest():
   res = session.get('https://suap.ifpb.edu.br')
@@ -25,9 +26,6 @@ def getCookiesInitialPage(initial_page):
 
   csrf = initial_page.cookies['csrftoken']
   session_id = initial_page.cookies['sessionid']
-
-  print(csrf)
-  print(session_id)
 
   return [ middleware_csrf, csrf, session_id ]
 
@@ -69,8 +67,6 @@ def loginReq(session_id, csrf, middleware_csrf):
   req = req.prepare()
   res = session.send(req)
 
-  print(res.headers)
-  print(res.cookies)
   return res
 
 def boletimPageRequest(session_id, csrf):
@@ -105,6 +101,21 @@ def boletimPageRequest(session_id, csrf):
 
   return html_content
 
+def createJSON(html_content):
+  soup = BeautifulSoup(html_content, 'html.parser')
+
+  with open('boletim_html.txt', 'w') as html_arq:
+    html_arq.write(str(soup.tbody))
+
+  dic_materias = sanitizar_saida("boletim_html.txt")
+  boletim_json = json.dumps(
+    dic_materias, sort_keys=True, indent=2, ensure_ascii=False
+  )
+
+  with open('boletim.json', 'w') as json_arq:
+    json_arq.write(boletim_json)
+
+  return boletim_json
 
 def main():
 
@@ -112,31 +123,26 @@ def main():
   middleware_csrf, csrf, session_id = getCookiesInitialPage(initial_page)
   res = loginReq(session_id, csrf, middleware_csrf)
 
-  return [res, csrf, session_id]
+  try:
+    session_id = res.cookies['sessionid']
+  except Exception as e:
+    print(e)
+    sys.exit(1)
+  try:
+    csrf = res.cookies['csrftoken']
+  except:
+    pass
+
+  html_content = boletimPageRequest(session_id, csrf)
+  boletim_json = createJSON(html_content)
 
 
+  return boletim_json
 
-res, csrf, session_id = main()
-time_retry = 0
 
-try:
-  session_id = res.cookies['sessionid']
-except Exception as e:
-  print(e)
-try:
-  csrf = res.cookies['csrftoken']
-except:
-  pass
 session.close()
-html_content = boletimPageRequest(session_id, csrf)
 
-soup = BeautifulSoup(html_content, 'html.parser')
-with open('boletim_html.txt', 'w') as arq:
-  arq.write(str(soup.tbody))
-
-dic_materias = sanitizar_saida("boletim_html.txt")
-with open('boletim.json', 'w') as arq:
-  arq.write(
-    json.dumps(dic_materias, sort_keys=True, indent=2, ensure_ascii=False)
-  )
+if __name__== "__main__":
+  boletim_json = main()
+  print(boletim_json)
 
