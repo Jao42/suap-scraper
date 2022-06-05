@@ -9,7 +9,7 @@ import time
 session = requests.Session()
 session.headers.update({'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36.'})
 
-def initialPageRequest():
+def getInitialPage():
   res = session.get('https://suap.ifpb.edu.br')
   return res
 
@@ -29,7 +29,7 @@ def getCookiesInitialPage(initial_page):
 
 
 
-def loginReq(session_id, csrf, middleware_csrf):
+def loginSUAP(session_id, csrf, middleware_csrf):
   matricula = environ['SUAP_MATRICULA']
   senha = environ['SUAP_SENHA']
 
@@ -119,9 +119,9 @@ def createJSON(html_content):
 
 def main():
 
-  initial_page = initialPageRequest()
+  initial_page = getInitialPage()
   middleware_csrf, csrf, session_id = getCookiesInitialPage(initial_page)
-  res = loginReq(session_id, csrf, middleware_csrf)
+  res = loginSUAP(session_id, csrf, middleware_csrf)
 
   try:
     session_id = res.cookies['sessionid']
