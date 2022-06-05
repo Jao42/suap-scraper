@@ -6,8 +6,6 @@ from limpar_dados import sanitizar_saida
 import json
 import time
 
-matricula = environ['SUAP_MATRICULA']
-senha = environ['SUAP_SENHA']
 session = requests.Session()
 session.headers.update({'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36.'})
 
@@ -69,7 +67,9 @@ def loginReq(session_id, csrf, middleware_csrf):
 
   return res
 
-def boletimPageRequest(session_id, csrf):
+def getBoletimPage(session_id, csrf):
+  matricula = environ['SUAP_MATRICULA']
+
   req_json = {
     "mode": "cors"
     }
@@ -133,7 +133,7 @@ def main():
   except:
     pass
 
-  html_content = boletimPageRequest(session_id, csrf)
+  html_content = getBoletimPage(session_id, csrf)
   boletim_json = createJSON(html_content)
 
 
