@@ -44,6 +44,7 @@ def loginSUAP(session_id, csrf, middleware_csrf):
       "sec-fetch-site": "same-origin",
       "sec-fetch-user": "?1",
       "sec-gpc": "1",
+      "referer": "https://suap.ifpb.edu.br/accounts/login/?next=/",
       "upgrade-insecure-requests": "1"
     }
 
