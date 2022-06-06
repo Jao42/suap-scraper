@@ -2,8 +2,9 @@ from bs4 import BeautifulSoup
 from ast import literal_eval
 import sys
 import json
+from sanit_pandas import pegarDetalhar
 
-def sanitizar_saida(arq):
+def sanitizar_saida(arq, session):
 
   file = open(arq, 'r')
   html_file = file.read()
@@ -26,7 +27,15 @@ def sanitizar_saida(arq):
     for value in materia_medias_ref:
       materias[disciplina]['nota_' + str(nota)] = []
       soup = BeautifulSoup(str(value), 'html.parser')
-      materias[disciplina]['nota_' + str(nota)].append(soup.get_text().replace(' ', '').replace('\n', '').replace('\\n', ''))
+      if (soup.a is not None):
+        link =  'https://suap.ifpb.edu.br' + soup.a['href']
+        res = session.get(link)
+        valor = pegarDetalhar(res.text)
+
+      else:
+        valor = soup.get_text().replace(' ', '').replace('\n', '').replace('\\n', '')
+
+      materias[disciplina]['nota_' + str(nota)].append(valor)
       nota += 1
   return materias
 

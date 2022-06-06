@@ -102,13 +102,13 @@ def getBoletimPage(session_id, csrf):
 
   return html_content
 
-def createJSON(html_content):
+def createJSON(html_content, session):
   soup = BeautifulSoup(html_content, 'html.parser')
 
   with open('boletim_html.txt', 'w') as html_arq:
     html_arq.write(str(soup.tbody))
 
-  dic_materias = sanitizar_saida("boletim_html.txt")
+  dic_materias = sanitizar_saida("boletim_html.txt", session)
   boletim_json = json.dumps(
     dic_materias, sort_keys=True, indent=2, ensure_ascii=False
   )
@@ -135,15 +135,13 @@ def main():
     pass
 
   html_content = getBoletimPage(session_id, csrf)
-  boletim_json = createJSON(html_content)
-
+  boletim_json = createJSON(html_content, session)
 
   return boletim_json
 
 
-session.close()
 
 if __name__== "__main__":
   boletim_json = main()
   print(boletim_json)
-
+  session.close()
