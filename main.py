@@ -1,18 +1,15 @@
 import requests
 import sys
-from os import environ
 from bs4 import BeautifulSoup
 from limpar_dados import sanitizar_saida
 import json
 import time
+import os
+from dotenv import load_dotenv
 
-session = requests.Session()
-session.headers.update({'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36.'})
-
-def getInitialPage():
+def getInitialPage(session):
   res = session.get('https://suap.ifpb.edu.br')
   return res
-
 
 def getCookiesInitialPage(initial_page):
 
@@ -29,9 +26,7 @@ def getCookiesInitialPage(initial_page):
 
 
 
-def loginSUAP(session_id, csrf, middleware_csrf):
-  matricula = environ['SUAP_MATRICULA']
-  senha = environ['SUAP_SENHA']
+def loginSUAP(matricula, senha, session, session_id, csrf, middleware_csrf):
 
 
   headers = {
@@ -48,7 +43,7 @@ def loginSUAP(session_id, csrf, middleware_csrf):
       "upgrade-insecure-requests": "1"
     }
 
-  body = "csrfmiddlewaretoken="+ csrf +"&username="+matricula+"&password="+senha+"&this_is_the_login_form=1&next=%2F"
+  body = "csrfmiddlewaretoken="+ csrf +"&username="+matricula+"&password="+senha+"&this_is_the_login_form=1&next=%2F&g-recaptcha-response="
 
   req_json = {
     "referrer": "https://suap.ifpb.edu.br",
@@ -68,8 +63,7 @@ def loginSUAP(session_id, csrf, middleware_csrf):
 
   return res
 
-def getBoletimPage(session_id, csrf):
-  matricula = environ['SUAP_MATRICULA']
+def getBoletimPage(matricula, session, session_id, csrf):
 
   req_json = {
     "mode": "cors"
@@ -119,10 +113,15 @@ def createJSON(html_content, session):
   return boletim_json
 
 def main():
+  session = requests.Session()
+  session.headers.update({'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36.'})
+  load_dotenv()
+  matricula = os.getenv("SUAP_MATRICULA")
+  senha = os.getenv("SUAP_SENHA")
 
-  initial_page = getInitialPage()
+  initial_page = getInitialPage(session)
   middleware_csrf, csrf, session_id = getCookiesInitialPage(initial_page)
-  res = loginSUAP(session_id, csrf, middleware_csrf)
+  res = loginSUAP(matricula, senha, session, session_id, csrf, middleware_csrf)
 
   try:
     session_id = res.cookies['sessionid']
@@ -134,14 +133,14 @@ def main():
   except:
     pass
 
-  html_content = getBoletimPage(session_id, csrf)
+  html_content = getBoletimPage(matricula, session, session_id, csrf)
   boletim_json = createJSON(html_content, session)
 
-  return boletim_json
+  session.close()
 
+  return boletim_json
 
 
 if __name__== "__main__":
   boletim_json = main()
   print(boletim_json)
-  session.close()
