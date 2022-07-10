@@ -16,12 +16,13 @@ class SUAP:
     self.user_agent = user_agent
     self.session = requests.Session()
     self.session.headers.update(user_agent)
+    self.session_id, self.csrf = self.__loginSUAP()
 
-  def getInitialPage(self):
+  def __getInitialPage(self):
     res = self.session.get('https://suap.ifpb.edu.br')
     return res
 
-  def getCookiesInitialPage(self, initial_page):
+  def __getCookiesInitialPage(self, initial_page):
 
     soup = BeautifulSoup(initial_page.text, 'html.parser')
     middleware_csrf = soup.find(
@@ -35,7 +36,10 @@ class SUAP:
     return [ middleware_csrf, csrf, session_id ]
 
 
-  def loginSUAP(self, session_id, csrf, middleware_csrf):
+  def __loginSUAP(self):
+
+    initial_page = self.__getInitialPage()
+    middleware_csrf, csrf, session_id = self.__getCookiesInitialPage(initial_page)
 
 
     headers = {
@@ -70,9 +74,20 @@ class SUAP:
     req = req.prepare()
     res = self.session.send(req)
 
-    return res
+    try:
+      session_id = res.cookies['sessionid']
+    except Exception as e:
+      print(e)
+      sys.exit(1)
+    try:
+      csrf = res.cookies['csrftoken']
+    except:
+      pass
 
-  def getBoletimPage(self, session_id, csrf):
+
+    return [ session_id, csrf ]
+
+  def __getBoletimPage(self):
 
     req_json = {
       "mode": "cors"
@@ -96,7 +111,7 @@ class SUAP:
       "mode": "cors"
       }
 
-    req = requests.Request("GET", "https://suap.ifpb.edu.br/edu/aluno/"+str(self.matricula)+"/?tab=boletim", cookies={'sessionid': session_id, 'csrftoken': csrf}, headers=headers, json=req_json)
+    req = requests.Request("GET", "https://suap.ifpb.edu.br/edu/aluno/"+str(self.matricula)+"/?tab=boletim", cookies={'sessionid': self.session_id, 'csrftoken': self.csrf}, headers=headers, json=req_json)
 
     req = req.prepare()
     res = self.session.send(req)
@@ -104,7 +119,7 @@ class SUAP:
 
     return html_content
 
-  def createJSON(self, html_content):
+  def __createBoletimJSON(self, html_content):
     soup = BeautifulSoup(html_content, 'html.parser')
 
     with open('boletim_html.txt', 'w') as html_arq:
@@ -120,32 +135,26 @@ class SUAP:
 
     return boletim_json
 
+  def getBoletim(self):
+    html_boletim = self.__getBoletimPage()
+    boletim = self.__createBoletimJSON(html_boletim)
+    return boletim
+
+
+
+
+
 def main():
   load_dotenv()
   matricula = os.getenv("SUAP_MATRICULA")
   senha = os.getenv("SUAP_SENHA")
+
   suap = SUAP(matricula, senha)
-
-  initial_page = suap.getInitialPage()
-  middleware_csrf, csrf, session_id = suap.getCookiesInitialPage(initial_page)
-  res = suap.loginSUAP(session_id, csrf, middleware_csrf)
-
-  try:
-    session_id = res.cookies['sessionid']
-  except Exception as e:
-    print(e)
-    sys.exit(1)
-  try:
-    csrf = res.cookies['csrftoken']
-  except:
-    pass
-
-  html_content = suap.getBoletimPage(session_id, csrf)
-  boletim_json = suap.createJSON(html_content)
-
+  boletim = suap.getBoletim()
   suap.session.close()
 
-  return boletim_json
+  return boletim
+
 
 
 if __name__== "__main__":
