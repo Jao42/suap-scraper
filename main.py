@@ -36,7 +36,7 @@ class SUAP:
     return [ middleware_csrf, csrf, session_id ]
 
 
-  def __loginSUAP(self):
+  def __loginSUAP(self, campo_captcha=False):
 
     initial_page = self.__getInitialPage()
     middleware_csrf, csrf, session_id = self.__getCookiesInitialPage(initial_page)
@@ -56,7 +56,10 @@ class SUAP:
         "upgrade-insecure-requests": "1"
       }
 
-    body = "csrfmiddlewaretoken="+ csrf +"&username="+str(self.matricula)+"&password="+self.senha+"&this_is_the_login_form=1&next=%2F&g-recaptcha-response="
+    body = "csrfmiddlewaretoken="+ middleware_csrf +"&username="+str(self.matricula)+"&password="+self.senha+"&this_is_the_login_form=1&next="
+
+    if campo_captcha:
+      body += "&g-recaptcha-response="
 
     req_json = {
       "referrer": "https://suap.ifpb.edu.br",
@@ -74,11 +77,7 @@ class SUAP:
     req = req.prepare()
     res = self.session.send(req)
 
-    try:
-      session_id = res.cookies['sessionid']
-    except Exception as e:
-      print(e)
-      sys.exit(1)
+    session_id = res.cookies['sessionid']
     try:
       csrf = res.cookies['csrftoken']
     except:
