@@ -119,12 +119,11 @@ class SUAP:
     return html_content
 
   def __createBoletimJSON(self, html_content):
-    soup = BeautifulSoup(html_content, 'html.parser')
 
-    with open('boletim_html.txt', 'w') as html_arq:
-      html_arq.write(str(soup.tbody))
+    with open('boletim.html', 'w') as html_arq:
+      html_arq.write(html_content)
 
-    dic_materias = sanitizar_saida("boletim_html.txt", self.session)
+    dic_materias = sanitizar_saida("boletim.html", self.session)
     boletim_json = json.dumps(
       dic_materias, sort_keys=True, indent=2, ensure_ascii=False
     )
@@ -152,9 +151,8 @@ def main():
   boletim = suap.getBoletim()
   suap.session.close()
 
-  return boletim
-
+  print(boletim)
 
 
 if __name__== "__main__":
-  print(main())
+  main()

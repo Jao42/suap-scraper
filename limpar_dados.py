@@ -1,8 +1,14 @@
 from bs4 import BeautifulSoup
-from ast import literal_eval
 import sys
 import json
-from sanit_pandas import pegarDetalhar
+from pandas import read_html
+
+
+def pegarDetalhar(link):
+
+  det = read_html(link)[0]
+  notas = dict(zip(det['Sigla'], det['Nota Obtida']))
+  return notas
 
 def sanitizar_saida(arq, session):
 
@@ -11,22 +17,28 @@ def sanitizar_saida(arq, session):
   file.close()
 
   soup = BeautifulSoup(html_file, 'html.parser')
+  soup = soup.tbody
   materias_html = soup.find_all('tr')
 
   materias = {}
 
-  for i in materias_html:
-    soup = BeautifulSoup(str(i), 'html.parser')
-    materias_html_td = i.find_all('td')
+  labels = ['E1', 'E2', 'E3', 'E4', 'MD', 'CONCEITO']
+  for i in range(len(materias_html)):
+
+    soup = BeautifulSoup(str(materias_html[i]), 'html.parser')
+    materias_html_td = soup.find_all('td')
 
     disciplina_soup = materias_html_td[1]
     disciplina = disciplina_soup.get_text().replace('\n', '').strip().replace('  ', '')
     materias[disciplina] = {}
-    nota = 1
     materia_medias_ref = [materias_html_td[7], materias_html_td[9], materias_html_td[11], materias_html_td[13], materias_html_td[15], materias_html_td[18]]
-    for value in materia_medias_ref:
-      materias[disciplina]['nota_' + str(nota)] = []
-      soup = BeautifulSoup(str(value), 'html.parser')
+
+    for i in range(len(labels)):
+      label = labels[i]
+      notas_materia = materia_medias_ref[i]
+      materias[disciplina][label] = []
+
+      soup = BeautifulSoup(str(notas_materia), 'html.parser')
       if (soup.a is not None):
         link =  'https://suap.ifpb.edu.br' + soup.a['href']
         res = session.get(link)
@@ -35,15 +47,6 @@ def sanitizar_saida(arq, session):
       else:
         valor = soup.get_text().replace(' ', '').replace('\n', '').replace('\\n', '')
 
-      materias[disciplina]['nota_' + str(nota)].append(valor)
-      nota += 1
+      materias[disciplina][label].append(valor)
   return materias
-
-
-if __name__ == '__main__':
-  dic_materias = sanitizar_saida("boletim_html.txt")
-  with open('boletim.json', 'w') as arq:
-    arq.write(
-      json.dumps(dic_materias, sort_keys=True, indent=2, ensure_ascii=False)
-    )
 
