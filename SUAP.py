@@ -8,7 +8,6 @@ import os
 from config import *
 
 class SUAP:
-
   def __init__(self, matricula, senha, user_agent=UA_PADRAO):
     self.matricula = matricula
     self.senha = senha
@@ -22,7 +21,6 @@ class SUAP:
     return res
 
   def __getCookiesInitialPage(self, initial_page):
-
     soup = BeautifulSoup(initial_page.text, 'html.parser')
     middleware_csrf = soup.find(
       'input',
@@ -36,7 +34,6 @@ class SUAP:
 
 
   def __loginSUAP(self, campo_captcha=False):
-
     initial_page = self.__getInitialPage()
     middleware_csrf, csrf, session_id = self.__getCookiesInitialPage(initial_page)
 
@@ -44,7 +41,6 @@ class SUAP:
 
     if campo_captcha:
       body += "&g-recaptcha-response="
-
 
     req = requests.Request("POST", "https://suap.ifpb.edu.br/accounts/login/?next=/", headers=HEADER_LOGIN, data=body, json=REQ_JSON_LOGIN, cookies={
       'csrftoken': csrf, 'sessionid': session_id
@@ -59,12 +55,9 @@ class SUAP:
     except:
       pass
 
-
     return [ session_id, csrf ]
 
   def __getBoletimPage(self):
-
-
     req_json = REQ_JSON_BOLETIM
     req_json["referrer"] = "https://suap.ifpb.edu.br/edu/aluno/" + str(self.matricula) + "/?tab=boletim"
 
@@ -77,7 +70,6 @@ class SUAP:
     return html_content
 
   def __createBoletimJSON(self, html_content):
-
     with open('./tmp/boletim.html', 'w') as html_arq:
       html_arq.write(html_content)
 
