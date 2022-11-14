@@ -36,7 +36,6 @@ def sanitizar_saida(arq, session):
     for i in range(len(labels)):
       label = labels[i]
       notas_materia = materia_medias_ref[i]
-      materias[disciplina][label] = []
 
       soup = BeautifulSoup(str(notas_materia), 'html.parser')
       if (soup.a is not None):
@@ -47,6 +46,6 @@ def sanitizar_saida(arq, session):
       else:
         valor = soup.get_text().replace(' ', '').replace('\n', '').replace('\\n', '')
 
-      materias[disciplina][label].append(valor)
+      materias[disciplina][label] = valor
   return materias
 
