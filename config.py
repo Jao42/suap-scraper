@@ -42,4 +42,6 @@ REQ_JSON_BOLETIM = {
   "mode": "cors"
   }
 
-
+MSGS_ERRO = ["Por favor, entre com um usuário  e senha corretos. Note que ambos os campos diferenciam maiúsculas e minúsculas.",
+             "Por favor, corrija o erro abaixo."
+             ]

@@ -49,7 +49,23 @@ class SUAP:
     req = req.prepare()
     res = self.session.send(req)
 
-    session_id = res.cookies['sessionid']
+    try:
+      session_id = res.cookies['sessionid']
+    except KeyError:
+      print("Não foi possível logar no SUAP")
+      soup = BeautifulSoup(res.text, 'html.parser')
+      erro = soup.find(class_="errornote")
+      if erro == None:
+        raise
+      msg_erro = erro.get_text().strip()
+      print(msg_erro)
+      if msg_erro == MSGS_ERRO[0]:
+        print("Matricula ou senha estão incorretos")
+      elif msg_erro == MSGS_ERRO[1]:
+        print("Dados corretos, mas captcha impediu o login")
+      else:
+        print(msg_erro)
+      raise
     try:
       csrf = res.cookies['csrftoken']
     except:
