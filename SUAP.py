@@ -35,16 +35,29 @@ class SUAP:
 
   def __loginSUAP(self, campo_captcha=False):
     initial_page = self.__getInitialPage()
-    middleware_csrf, csrf, session_id = self.__getCookiesInitialPage(initial_page)
+    middleware_csrf, csrf, session_id = self.__getCookiesInitialPage(
+      initial_page
+    )
 
-    body = "csrfmiddlewaretoken="+ middleware_csrf +"&username="+str(self.matricula)+"&password="+self.senha+"&this_is_the_login_form=1&next="
+    body = ("csrfmiddlewaretoken=" + middleware_csrf +
+    "&username=" + str(self.matricula) +
+    "&password=" + self.senha +
+    "&this_is_the_login_form=1&next="
+    )
 
     if campo_captcha:
       body += "&g-recaptcha-response="
 
-    req = requests.Request("POST", "https://suap.ifpb.edu.br/accounts/login/?next=/", headers=HEADER_LOGIN, data=body, json=REQ_JSON_LOGIN, cookies={
-      'csrftoken': csrf, 'sessionid': session_id
-      })
+    req = requests.Request("POST",
+                           "https://suap.ifpb.edu.br/accounts/login/?next=/",
+                           headers=HEADER_LOGIN,
+                           data=body,
+                           json=REQ_JSON_LOGIN,
+                           cookies={
+                            'csrftoken': csrf,
+                            'sessionid': session_id
+                          }
+                        )
 
     req = req.prepare()
     res = self.session.send(req)
@@ -75,10 +88,22 @@ class SUAP:
 
   def __getBoletimPage(self):
     req_json = REQ_JSON_BOLETIM
-    req_json["referrer"] = "https://suap.ifpb.edu.br/edu/aluno/" + str(self.matricula) + "/?tab=boletim"
+    req_json["referrer"] = ("https://suap.ifpb.edu.br/edu/aluno/"
+    + str(self.matricula)
+    + "/?tab=boletim"
+    )
 
-    req = requests.Request("GET", "https://suap.ifpb.edu.br/edu/aluno/"+str(self.matricula)+"/?tab=boletim", cookies={'sessionid': self.session_id, 'csrftoken': self.csrf}, headers=HEADER_BOLETIM, json=req_json)
-
+    req = requests.Request("GET",
+                           "https://suap.ifpb.edu.br/edu/aluno/"
+                           +str(self.matricula)
+                           +"/?tab=boletim",
+                           cookies={
+                             'sessionid': self.session_id,
+                             'csrftoken': self.csrf
+                           },
+                           headers=HEADER_BOLETIM,
+                           json=req_json
+                           )
     req = req.prepare()
     res = self.session.send(req)
     html_content = res.text
