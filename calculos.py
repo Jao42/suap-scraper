@@ -3,10 +3,10 @@ def somaMedias(boletim):
   items = boletim.items()
   for mat, bims in items:
     notas[mat] = 0
-    for nome, bim in bims.items():
-      if bim == '-':
+    for bim_notas in bims.values():
+      if bim_notas == None:
         continue
-      a1, a2, re = [int(i) if i != '-' else 0 for i in [bim['A1'], bim['A2'], bim['RE']]]
+      a1, a2, re = [int(i) if i != None else 0 for i in [bim_notas['A1'], bim_notas['A2'], bim_notas['RE']]]
       media = (a1 + a2) // 2
       nota = media if (media > re) else re
       notas[mat] += nota

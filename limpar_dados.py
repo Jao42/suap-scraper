@@ -7,6 +7,9 @@ from pandas import read_html
 def pegarDetalhar(link):
 
   det = read_html(link)[0]
+  for i in range(len(det['Nota Obtida'])):
+    if det['Nota Obtida'][i] == '-':
+      det['Nota Obtida'][i] = None
   notas = dict(zip(det['Sigla'], det['Nota Obtida']))
   return notas
 
@@ -45,6 +48,8 @@ def sanitizar_saida(arq, session):
 
       else:
         valor = soup.get_text().replace(' ', '').replace('\n', '').replace('\\n', '')
+        valor = valor if valor != '-' else None
+
 
       materias[disciplina][label] = valor
   return materias
