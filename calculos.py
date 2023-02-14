@@ -3,7 +3,8 @@ def somaMedias(boletim):
   items = boletim.items()
   for mat, bims in items:
     notas[mat] = 0
-    for bim_notas in bims.values():
+    bimestres = [bims['E1'], bims['E2'], bims['E3'], bims['E4']]
+    for bim_notas in bimestres:
       if bim_notas == None:
         continue
       a1, a2, re = [int(i) if i != None else 0 for i in [bim_notas['A1'], bim_notas['A2'], bim_notas['RE']]]
@@ -35,6 +36,13 @@ def mensagemQuantoFalta(quanto_falta):
     msg += f'Você já passou em {passou}/{len(quanto_falta)} materias(genio, apenas.)\n'
   return msg
 
+def pegarQuantoFalta(boletim):
+  soma_medias = somaMedias(boletim)
+  quanto_falta = quantoFaltaMedia(soma_medias)
+  msg = mensagemQuantoFalta(quanto_falta)
+
+  return msg
+
 if __name__ == '__main__':
   import json
 
@@ -42,9 +50,7 @@ if __name__ == '__main__':
   with open('boletim.json') as f:
     boletim = json.loads(f.read())
 
-  soma_medias = somaMedias(boletim)
-  quanto_falta = quantoFaltaMedia(soma_medias)
-  msg = mensagemQuantoFalta(quanto_falta)
+  msg = pegarQuantoFalta(boletim)
 
   with open('falta.txt', 'w') as f:
     f.write(msg)
