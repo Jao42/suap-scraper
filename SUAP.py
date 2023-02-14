@@ -7,6 +7,12 @@ import time
 import os
 from config import *
 
+
+class LoginError(Exception):
+  """
+  Gerar mensagens de erro ao n conseguir logar
+  """
+
 class SUAP:
   def __init__(self, matricula, senha, user_agent=UA_PADRAO):
     self.matricula = matricula
@@ -65,20 +71,15 @@ class SUAP:
     try:
       session_id = res.cookies['sessionid']
     except KeyError:
-      print("Não foi possível logar no SUAP")
       soup = BeautifulSoup(res.text, 'html.parser')
       erro = soup.find(class_="errornote")
       if erro == None:
-        raise
+        raise LoginError("Não foi possivel logar no SUAP")
       msg_erro = erro.get_text().strip()
-      print(msg_erro)
-      if msg_erro == MSGS_ERRO[0]:
-        print("Matricula ou senha estão incorretos")
-      elif msg_erro == MSGS_ERRO[1]:
-        print("Dados corretos, mas captcha impediu o login")
-      else:
-        print(msg_erro)
-      raise
+      try:
+        raise LoginError(MSGS_ERRO[msg_erro])
+      except KeyError:
+        raise LoginError(msg_erro)
     try:
       csrf = res.cookies['csrftoken']
     except:

@@ -42,6 +42,6 @@ REQ_JSON_BOLETIM = {
   "mode": "cors"
   }
 
-MSGS_ERRO = ["Por favor, entre com um usuário  e senha corretos. Note que ambos os campos diferenciam maiúsculas e minúsculas.",
-             "Por favor, corrija o erro abaixo."
-             ]
+MSGS_ERRO = {"or favor, entre com um usuário  e senha corretos. Note que ambos os campos diferenciam maiúsculas e minúsculas.": "Matricula ou senha estao incorretos",
+             "Por favor, corrija o erro abaixo.":"Captcha impediu o login(credenciais validas)"
+             }
