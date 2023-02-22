@@ -6,21 +6,30 @@ import json
 import time
 import os
 from config import *
-
-
 class LoginError(Exception):
   """
   Gerar mensagens de erro ao n conseguir logar
   """
 
+
 class SUAP:
-  def __init__(self, matricula, senha, user_agent=UA_PADRAO):
-    self.matricula = matricula
-    self.senha = senha
+  def __init__(self, user_agent=UA_PADRAO):
     self.user_agent = user_agent
     self.session = requests.Session()
     self.session.headers.update(user_agent)
+
+  def loginCredenciais(self, matricula, senha, user_agent=UA_PADRAO):
+    self.matricula = matricula
+    self.senha = senha
     self.session_id, self.csrf = self.__loginSUAP()
+
+  def loginSessionId(self, session_id, user_agent=UA_PADRAO):
+    self.session_id = session_id
+    self.session.cookies['sessionid'] = self.session_id
+    logged = self.__getInitialPage()
+    self.matricula = logged.headers.get('user')
+    self.csrf = ''
+    self.senha = ''
 
   def __getInitialPage(self):
     res = self.session.get('https://suap.ifpb.edu.br')
