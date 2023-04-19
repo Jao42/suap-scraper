@@ -13,6 +13,19 @@ def pegar_detalhar(link):
   notas = dict(zip(det['Sigla'], det['Nota Obtida']))
   return notas
 
+def tem_colspan(tag):
+  return tag.has_attr('colspan')
+
+
+def criar_indices_colspan(indices_notas, indices_colspans):
+  indices_notas_materia = indices_notas[::]
+  for i in indices_colspans:
+    for j in range(len(indices_notas)):
+      if indices_notas_materia[j] > i:
+        indices_notas_materia[j] -= 1
+  return indices_notas_materia
+
+
 def sanitizar_saida(arq, session):
 
   INDICES_NOTAS_PADRAO = [7, 9, 11, 13, 15, 18]
@@ -36,11 +49,14 @@ def sanitizar_saida(arq, session):
     disciplina_soup = materia_tds[1]
     disciplina = disciplina_soup.get_text().replace('\n', '').strip().replace('  ', '')
     materias[disciplina] = {}
-    materia_medias_ref = [materias_html_td[7], materias_html_td[9], materias_html_td[11], materias_html_td[13], materias_html_td[15], materias_html_td[18]]
 
-    for i in range(len(labels)):
-      label = labels[i]
-      notas_materia = materia_medias_ref[i]
+    indices_colspan = [i for i in range(len(materia_tds)) if tem_colspan(materia_tds[i])]
+    indices_notas_materia = criar_indices_colspan(INDICES_NOTAS_PADRAO, indices_colspan)
+    materia_notas_tds = [materia_tds[i] for i in indices_notas_materia]
+
+    for i in range(len(INDICES_NOTAS_PADRAO)):
+      label = LABELS_NOTAS_TABLE[i]
+      notas_materia = materia_notas_tds[i]
 
       soup = BeautifulSoup(str(notas_materia), 'html.parser')
       if (soup.a is not None):
