@@ -2,10 +2,9 @@ from dotenv import load_dotenv
 import os
 from SUAP import SUAP
 
-load_dotenv()
-matricula = os.getenv("SUAP_MATRICULA")
-senha = os.getenv("SUAP_SENHA")
+session_id = os.getenv("SUAP_SESSION_ID")
 
-suap = SUAP(matricula, senha)
+suap = SUAP()
+suap.loginSessionId(session_id)
 boletim = suap.getBoletim()
-suap.session.close()
+print(boletim)
