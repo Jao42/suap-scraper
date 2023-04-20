@@ -4,6 +4,10 @@ import json
 from pandas import read_html
 
 
+INDICES_NOTAS_PADRAO = [7, 9, 11, 13, 15, 18]
+LABELS_NOTAS_TABLE = ['E1', 'E2', 'E3', 'E4', 'MD', 'CONCEITO']
+
+
 def pegar_detalhar(link):
 
   det = read_html(link)[0]
@@ -12,6 +16,26 @@ def pegar_detalhar(link):
       det['Nota Obtida'][i] = None
   notas = dict(zip(det['Sigla'], det['Nota Obtida']))
   return notas
+
+def tratar_notas_etapas(materia_notas_tds, session):
+  etapas = {}
+  for i in range(len(INDICES_NOTAS_PADRAO)):
+    label = LABELS_NOTAS_TABLE[i]
+    notas_materia = materia_notas_tds[i]
+    valor = ''
+
+    soup = BeautifulSoup(str(notas_materia), 'html.parser')
+    if (soup.a is not None):
+      link = 'https://suap.ifpb.edu.br' + soup.a['href']
+      res = session.get(link)
+      valor = pegar_detalhar(res.text)
+
+    else:
+      valor = soup.get_text().replace(' ', '').replace('\n', '').replace('\\n', '')
+      valor = valor if valor != '-' else None
+    etapas[label] = valor
+  return etapas
+
 
 def tem_colspan(tag):
   return tag.has_attr('colspan')
@@ -28,8 +52,6 @@ def criar_indices_colspan(indices_notas, indices_colspans):
 
 def sanitizar_saida(arq, session):
 
-  INDICES_NOTAS_PADRAO = [7, 9, 11, 13, 15, 18]
-  LABELS_NOTAS_TABLE = ['E1', 'E2', 'E3', 'E4', 'MD', 'CONCEITO']
 
   file = open(arq, 'r')
   html_file = file.read()
@@ -48,27 +70,11 @@ def sanitizar_saida(arq, session):
 
     disciplina_soup = materia_tds[1]
     disciplina = disciplina_soup.get_text().replace('\n', '').strip().replace('  ', '')
-    materias[disciplina] = {}
 
     indices_colspan = [i for i in range(len(materia_tds)) if tem_colspan(materia_tds[i])]
     indices_notas_materia = criar_indices_colspan(INDICES_NOTAS_PADRAO, indices_colspan)
     materia_notas_tds = [materia_tds[i] for i in indices_notas_materia]
 
-    for i in range(len(INDICES_NOTAS_PADRAO)):
-      label = LABELS_NOTAS_TABLE[i]
-      notas_materia = materia_notas_tds[i]
-
-      soup = BeautifulSoup(str(notas_materia), 'html.parser')
-      if (soup.a is not None):
-        link =  'https://suap.ifpb.edu.br' + soup.a['href']
-        res = session.get(link)
-        valor = pegar_detalhar(res.text)
-
-      else:
-        valor = soup.get_text().replace(' ', '').replace('\n', '').replace('\\n', '')
-        valor = valor if valor != '-' else None
-
-
-      materias[disciplina][label] = valor
+    materias[disciplina] = tratar_notas_etapas(materia_notas_tds, session)
   return materias
 
