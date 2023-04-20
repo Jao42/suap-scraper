@@ -45,3 +45,6 @@ REQ_JSON_BOLETIM = {
 MSGS_ERRO = {"or favor, entre com um usuário  e senha corretos. Note que ambos os campos diferenciam maiúsculas e minúsculas.": "Matricula ou senha estao incorretos",
              "Por favor, corrija o erro abaixo.":"Captcha impediu o login(credenciais validas)"
              }
+
+INDICES_NOTAS_PADRAO = [7, 9, 11, 13, 15, 18]
+LABELS_NOTAS_TABLE = ['E1', 'E2', 'E3', 'E4', 'MD', 'CONCEITO']

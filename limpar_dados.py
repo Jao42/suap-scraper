@@ -2,11 +2,7 @@ from bs4 import BeautifulSoup
 import sys
 import json
 from pandas import read_html
-
-
-INDICES_NOTAS_PADRAO = [7, 9, 11, 13, 15, 18]
-LABELS_NOTAS_TABLE = ['E1', 'E2', 'E3', 'E4', 'MD', 'CONCEITO']
-
+from config import *
 
 def pegar_detalhar(link):
 
