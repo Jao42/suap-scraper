@@ -15,21 +15,14 @@ def notas_detalhar(html_detalhar):
 
 def tratar_etapas_tds(materia_etapas_tds, session):
   etapas = {}
-  for i in range(len(INDICES_NOTAS_PADRAO)):
-    label = LABELS_NOTAS_TABLE[i]
-    notas_materia = materia_etapas_tds[i]
-    valor = ''
-
+  for label, notas_materia in zip(LABELS_NOTAS_TABLE, materia_etapas_tds):
     soup = BeautifulSoup(str(notas_materia), 'html.parser')
-    if (soup.a is not None):
-      link = 'https://suap.ifpb.edu.br' + soup.a['href']
-      res = session.get(link)
-      valor = notas_detalhar(res.text)
-
-    else:
-      valor = soup.get_text().replace(' ', '').replace('\n', '').replace('\\n', '')
-      valor = valor if valor != '-' else None
-    etapas[label] = valor
+    valor = soup.get_text().strip() if not soup.a else notas_detalhar(
+      session.get(
+        LINK_SUAP + soup.a['href']
+        ).text
+      )
+    etapas[label] = valor if valor != '-' else None
   return etapas
 
 
