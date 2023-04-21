@@ -4,27 +4,27 @@ import json
 from pandas import read_html
 from config import *
 
-def pegar_detalhar(link):
+def notas_detalhar(html_detalhar):
 
-  det = read_html(link)[0]
+  det = read_html(html_detalhar)[0]
   for i in range(len(det['Nota Obtida'])):
     if det['Nota Obtida'][i] == '-':
       det['Nota Obtida'][i] = None
   notas = dict(zip(det['Sigla'], det['Nota Obtida']))
   return notas
 
-def tratar_notas_etapas(materia_notas_tds, session):
+def tratar_etapas_tds(materia_etapas_tds, session):
   etapas = {}
   for i in range(len(INDICES_NOTAS_PADRAO)):
     label = LABELS_NOTAS_TABLE[i]
-    notas_materia = materia_notas_tds[i]
+    notas_materia = materia_etapas_tds[i]
     valor = ''
 
     soup = BeautifulSoup(str(notas_materia), 'html.parser')
     if (soup.a is not None):
       link = 'https://suap.ifpb.edu.br' + soup.a['href']
       res = session.get(link)
-      valor = pegar_detalhar(res.text)
+      valor = notas_detalhar(res.text)
 
     else:
       valor = soup.get_text().replace(' ', '').replace('\n', '').replace('\\n', '')
@@ -46,14 +46,9 @@ def criar_indices_colspan(indices_notas, indices_colspans):
   return indices_notas_materia
 
 
-def sanitizar_saida(arq, session):
+def materias_etapas_tds(boletim_html):
 
-
-  file = open(arq, 'r')
-  html_file = file.read()
-  file.close()
-
-  soup = BeautifulSoup(html_file, 'html.parser')
+  soup = BeautifulSoup(boletim_html, 'html.parser')
   corpo_tabela_soup = soup.tbody
   materias_html = corpo_tabela_soup.find_all('tr')
 
@@ -69,8 +64,20 @@ def sanitizar_saida(arq, session):
 
     indices_colspan = [i for i in range(len(materia_tds)) if tem_colspan(materia_tds[i])]
     indices_notas_materia = criar_indices_colspan(INDICES_NOTAS_PADRAO, indices_colspan)
-    materia_notas_tds = [materia_tds[i] for i in indices_notas_materia]
+    materia_etapas_tds = [materia_tds[i] for i in indices_notas_materia]
 
-    materias[disciplina] = tratar_notas_etapas(materia_notas_tds, session)
+    materias[disciplina] = materia_etapas_tds
   return materias
+
+def gerar_boletim(arq_path, session):
+
+  file = open(arq_path, 'r')
+  boletim_html = file.read()
+  file.close()
+
+  materias = materias_etapas_tds(boletim_html)
+  boletim = {}
+  for disciplina, materia_etapas_tds in materias.items():
+    boletim[disciplina] = tratar_etapas_tds(materia_etapas_tds, session)
+  return boletim
 

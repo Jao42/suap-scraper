@@ -1,11 +1,13 @@
 import requests
 import sys
 from bs4 import BeautifulSoup
-from limpar_dados import sanitizar_saida
+from limpar_dados import gerar_boletim
 import json
 import time
 import os
 from config import *
+
+
 class LoginError(Exception):
   """
   Gerar mensagens de erro ao n conseguir logar
@@ -124,7 +126,7 @@ class SUAP:
     with open('./tmp/boletim.html', 'w') as html_arq:
       html_arq.write(html_content)
 
-    dic_materias = sanitizar_saida("./tmp/boletim.html", self.session)
+    dic_materias = gerar_boletim("./tmp/boletim.html", self.session)
     boletim_json = json.dumps(
       dic_materias, sort_keys=True, indent=2, ensure_ascii=False
     )
