@@ -123,16 +123,10 @@ class SUAP:
     return html_content
 
   def __createBoletimJSON(self, html_content):
-    with open('./tmp/boletim.html', 'w') as html_arq:
-      html_arq.write(html_content)
-
-    dic_materias = parsear_boletim("./tmp/boletim.html", self.session)
+    dic_materias = parsear_boletim(html_content, self.session)
     boletim_json = json.dumps(
       dic_materias, sort_keys=True, indent=2, ensure_ascii=False
     )
-
-    with open('boletim.json', 'w') as json_arq:
-      json_arq.write(boletim_json)
 
     return boletim_json
 

@@ -64,12 +64,7 @@ def materias_etapas_tds(boletim_html):
     materias[disciplina] = materia_etapas_tds
   return materias
 
-def parsear_boletim(arq_path, session):
-
-  file = open(arq_path, 'r')
-  boletim_html = file.read()
-  file.close()
-
+def parsear_boletim(boletim_html, session):
   materias = materias_etapas_tds(boletim_html)
   boletim = {}
   for disciplina, materia_etapas_tds in materias.items():
