@@ -1,6 +1,5 @@
-from dotenv import load_dotenv
-import os
 from SUAP import SUAP
+import os
 
 session_id = os.getenv("SUAP_SESSION_ID")
 
