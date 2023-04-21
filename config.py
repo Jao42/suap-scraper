@@ -48,3 +48,4 @@ MSGS_ERRO = {"or favor, entre com um usuário  e senha corretos. Note que ambos 
 
 INDICES_NOTAS_PADRAO = [7, 9, 11, 13, 15, 16, 18]
 LABELS_NOTAS_TABLE = ['E1', 'E2', 'E3', 'E4', 'MD', 'NAF', 'CONCEITO']
+LINK_SUAP = 'https://suap.ifpb.edu.br'

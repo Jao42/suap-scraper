@@ -34,7 +34,7 @@ class SUAP:
     self.senha = ''
 
   def __getInitialPage(self):
-    res = self.session.get('https://suap.ifpb.edu.br')
+    res = self.session.get(LINK_SUAP)
     return res
 
   def __getCookiesInitialPage(self, initial_page):
@@ -66,7 +66,7 @@ class SUAP:
       body += "&g-recaptcha-response="
 
     req = requests.Request("POST",
-                           "https://suap.ifpb.edu.br/accounts/login/?next=/",
+                           LINK_SUAP + "/accounts/login/?next=/",
                            headers=HEADER_LOGIN,
                            data=body,
                            json=REQ_JSON_LOGIN,
@@ -100,13 +100,13 @@ class SUAP:
 
   def __getBoletimPage(self):
     req_json = REQ_JSON_BOLETIM
-    req_json["referrer"] = ("https://suap.ifpb.edu.br/edu/aluno/"
+    req_json["referrer"] = (LINK_SUAP + "/edu/aluno/"
     + str(self.matricula)
     + "/?tab=boletim"
     )
 
     req = requests.Request("GET",
-                           "https://suap.ifpb.edu.br/edu/aluno/"
+                           LINK_SUAP + "/edu/aluno/"
                            +str(self.matricula)
                            +"/?tab=boletim",
                            cookies={
