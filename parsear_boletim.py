@@ -1,16 +1,18 @@
 from bs4 import BeautifulSoup
 import sys
 import json
-from pandas import read_html
 from config import *
 
 def notas_detalhar(html_detalhar):
+  notas = {}
+  soup = BeautifulSoup(html_detalhar, 'html.parser')
+  trs_soups = soup.tbody.find_all('tr')
+  for tr_soup in trs_soups:
+    tr_tds = tr_soup.find_all('td')
+    nota = tr_tds[4].get_text()
+    sigla_av = tr_tds[0].get_text()
+    notas[sigla_av] = None if nota == '-' else int(nota)
 
-  det = read_html(html_detalhar)[0]
-  for i in range(len(det['Nota Obtida'])):
-    if det['Nota Obtida'][i] == '-':
-      det['Nota Obtida'][i] = None
-  notas = dict(zip(det['Sigla'], det['Nota Obtida']))
   return notas
 
 def tratar_etapas_tds(materia_etapas_tds, session):
