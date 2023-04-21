@@ -69,7 +69,7 @@ def materias_etapas_tds(boletim_html):
     materias[disciplina] = materia_etapas_tds
   return materias
 
-def gerar_boletim(arq_path, session):
+def parsear_boletim(arq_path, session):
 
   file = open(arq_path, 'r')
   boletim_html = file.read()

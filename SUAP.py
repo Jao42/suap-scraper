@@ -1,7 +1,7 @@
 import requests
 import sys
 from bs4 import BeautifulSoup
-from limpar_dados import gerar_boletim
+from parsear_boletim import parsear_boletim
 import json
 import time
 import os
@@ -126,7 +126,7 @@ class SUAP:
     with open('./tmp/boletim.html', 'w') as html_arq:
       html_arq.write(html_content)
 
-    dic_materias = gerar_boletim("./tmp/boletim.html", self.session)
+    dic_materias = parsear_boletim("./tmp/boletim.html", self.session)
     boletim_json = json.dumps(
       dic_materias, sort_keys=True, indent=2, ensure_ascii=False
     )
