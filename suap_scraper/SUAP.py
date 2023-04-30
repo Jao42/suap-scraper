@@ -1,11 +1,11 @@
 import requests
 import sys
 from bs4 import BeautifulSoup
-from utils import parsear_boletim
+from suap_scraper.utils import parsear_boletim
 import json
 import time
 import os
-from config import *
+from suap_scraper.config import *
 
 
 class LoginError(Exception):

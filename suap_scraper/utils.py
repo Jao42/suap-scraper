@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 import sys
 import json
-from config import *
+from suap_scraper.config import *
 
 def notas_detalhar(html_detalhar):
   notas = {}
