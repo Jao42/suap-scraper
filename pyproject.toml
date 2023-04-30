@@ -1,16 +1,20 @@
 [build-system]
-requires = ["setuptools>=61.0", "requests>=2.26.0", "beautifulsoup4==4.9.3"]
+requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "suap_scraper"
-version = "0.0.2"
+version = "0.0.4"
 authors = [
   { name="Jao42", email="cavalcante.joao@protonmail.ch" },
 ]
 description = "Um scraper para o SUAP do IFPB"
 readme = "README.md"
 requires-python = ">=3.7"
+dependencies = [
+    "requests",
+    "beautifulsoup4",
+]
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
