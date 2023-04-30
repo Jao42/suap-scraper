@@ -1,7 +1,7 @@
 import requests
 import sys
 from bs4 import BeautifulSoup
-from parsear_boletim import parsear_boletim
+from utils import parsear_boletim
 import json
 import time
 import os
