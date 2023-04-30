@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "suap-scraper"
 version = "0.0.1"
 authors = [
-  { name="João Cavalcante", email="cavalcante.joao@protonmail.ch" },
+  { name="Jao42", email="cavalcante.joao@protonmail.ch" },
 ]
 description = "Um scraper para o SUAP do IFPB"
 readme = "README.md"
