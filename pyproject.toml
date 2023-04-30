@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=61.0", "requests>=2.26.0", "beautifulsoup4==4.9.3"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "suap-scraper"
-version = "0.0.1"
+name = "suap_scraper"
+version = "0.0.2"
 authors = [
   { name="Jao42", email="cavalcante.joao@protonmail.ch" },
 ]
