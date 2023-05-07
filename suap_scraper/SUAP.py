@@ -1,4 +1,4 @@
-import requests
+import httpx
 import sys
 from bs4 import BeautifulSoup
 from suap_scraper.utils import parsear_boletim
@@ -17,7 +17,7 @@ class LoginError(Exception):
 class SUAP:
   def __init__(self, user_agent=UA_PADRAO):
     self.user_agent = user_agent
-    self.session = requests.Session()
+    self.session = httpx.Client()
     self.session.headers.update(user_agent)
 
   def loginCredenciais(self, matricula, senha, user_agent=UA_PADRAO):
@@ -65,7 +65,7 @@ class SUAP:
     if campo_captcha:
       body += "&g-recaptcha-response="
 
-    req = requests.Request("POST",
+    req = session.build_request("POST",
                            LINK_SUAP + "/accounts/login/?next=/",
                            headers=HEADER_LOGIN,
                            data=body,
@@ -105,7 +105,7 @@ class SUAP:
     + "/?tab=boletim"
     )
 
-    req = requests.Request("GET",
+    req = self.session.build_request("GET",
                            LINK_SUAP + "/edu/aluno/"
                            +str(self.matricula)
                            +"/?tab=boletim",
@@ -116,8 +116,11 @@ class SUAP:
                            headers=HEADER_BOLETIM,
                            json=req_json
                            )
-    req = req.prepare()
-    res = self.session.send(req)
+    res = ''
+    html_content = ''
+    while req is not None:
+      res = self.session.send(req)
+      req = res.next_request
     html_content = res.text
 
     return html_content
