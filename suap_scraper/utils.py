@@ -1,9 +1,10 @@
 from bs4 import BeautifulSoup
 import sys
 import json
+import asyncio
 from suap_scraper.config import *
 
-def notas_detalhar(html_detalhar):
+def tratar_notas_detalhar(html_detalhar):
   notas = {}
   soup = BeautifulSoup(html_detalhar, 'html.parser')
   trs_soups = soup.tbody.find_all('tr')
@@ -15,17 +16,21 @@ def notas_detalhar(html_detalhar):
 
   return notas
 
-def tratar_etapas_tds(materia_etapas_tds, session):
+
+async def tratar_etapas_tds(materia_etapas_tds, session):
   etapas = {}
   etapas_td = zip(LABELS_NOTAS_TABLE, materia_etapas_tds)
   for etapa, td in etapas_td:
     link = td.a
     texto_td = td.get_text().strip()
-    notas = texto_td if link is None else notas_detalhar(
-      session.get(
-        LINK_SUAP + link['href']
-        ).text
-      )
+    notas = ''
+    if link is not None:
+      req_detalhar = await session.get(LINK_SUAP + link['href']
+        )
+      html_detalhar = req_detalhar.text
+      notas = tratar_notas_detalhar(html_detalhar)
+    else:
+      notas = texto_td
     etapas[etapa] = notas if notas != '-' else None
   return etapas
 
@@ -75,11 +80,11 @@ def materias_etapas_tds(boletim_html):
     materias[disciplina] = materia_etapas_tds
   return materias
 
-def parsear_boletim(boletim_html, session):
+async def parsear_boletim(boletim_html, session):
   materias = materias_etapas_tds(boletim_html)
   boletim = {}
   for disciplina, materia_etapas_tds in materias.items():
-    boletim[disciplina] = tratar_etapas_tds(
+    boletim[disciplina] = await tratar_etapas_tds(
       materia_etapas_tds,
       session
     )

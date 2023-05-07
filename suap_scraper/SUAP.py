@@ -1,4 +1,5 @@
 import httpx
+import asyncio
 import sys
 from bs4 import BeautifulSoup
 from suap_scraper.utils import parsear_boletim
@@ -17,24 +18,24 @@ class LoginError(Exception):
 class SUAP:
   def __init__(self, user_agent=UA_PADRAO):
     self.user_agent = user_agent
-    self.session = httpx.Client()
+    self.session = httpx.AsyncClient()
     self.session.headers.update(user_agent)
 
-  def loginCredenciais(self, matricula, senha, user_agent=UA_PADRAO):
+  async def loginCredenciais(self, matricula, senha, user_agent=UA_PADRAO):
     self.matricula = matricula
     self.senha = senha
-    self.session_id, self.csrf = self.__loginSUAP()
+    self.session_id, self.csrf = await self.__loginSUAP()
 
-  def loginSessionId(self, session_id, user_agent=UA_PADRAO):
+  async def loginSessionId(self, session_id, user_agent=UA_PADRAO):
     self.session_id = session_id
     self.session.cookies['sessionid'] = self.session_id
-    logged = self.__getInitialPage()
+    logged = await self.__getInitialPage()
     self.matricula = logged.headers.get('user')
     self.csrf = ''
     self.senha = ''
 
-  def __getInitialPage(self):
-    res = self.session.get(LINK_SUAP)
+  async def __getInitialPage(self):
+    res = await self.session.get(LINK_SUAP)
     return res
 
   def __getCookiesInitialPage(self, initial_page):
@@ -50,8 +51,8 @@ class SUAP:
     return [ middleware_csrf, csrf, session_id ]
 
 
-  def __loginSUAP(self, campo_captcha=False):
-    initial_page = self.__getInitialPage()
+  async def __loginSUAP(self, campo_captcha=False):
+    initial_page = await self.__getInitialPage()
     middleware_csrf, csrf, session_id = self.__getCookiesInitialPage(
       initial_page
     )
@@ -76,8 +77,7 @@ class SUAP:
                           }
                         )
 
-    req = req.prepare()
-    res = self.session.send(req)
+    res = await self.session.send(req)
 
     try:
       session_id = res.cookies['sessionid']
@@ -98,7 +98,7 @@ class SUAP:
 
     return [ session_id, csrf ]
 
-  def __getBoletimPage(self):
+  async def __getBoletimPage(self):
     req_json = REQ_JSON_BOLETIM
     req_json["referrer"] = (LINK_SUAP + "/edu/aluno/"
     + str(self.matricula)
@@ -119,21 +119,21 @@ class SUAP:
     res = ''
     html_content = ''
     while req is not None:
-      res = self.session.send(req)
+      res = await self.session.send(req)
       req = res.next_request
     html_content = res.text
 
     return html_content
 
-  def __createBoletimJSON(self, html_content):
-    dic_materias = parsear_boletim(html_content, self.session)
+  async def __createBoletimJSON(self, html_content):
+    dic_materias = await parsear_boletim(html_content, self.session)
     boletim_json = json.dumps(
       dic_materias, sort_keys=True, indent=2, ensure_ascii=False
     )
 
     return boletim_json
 
-  def getBoletim(self):
-    html_boletim = self.__getBoletimPage()
-    boletim = self.__createBoletimJSON(html_boletim)
+  async def getBoletim(self):
+    html_boletim = await self.__getBoletimPage()
+    boletim = await self.__createBoletimJSON(html_boletim)
     return boletim
