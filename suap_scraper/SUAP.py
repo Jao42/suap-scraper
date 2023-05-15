@@ -1,7 +1,6 @@
 import httpx
 import asyncio
 import sys
-from bs4 import BeautifulSoup
 from suap_scraper.utils import parsear_boletim
 import json
 import time
@@ -39,11 +38,11 @@ class SUAP:
     return res
 
   def __getCookiesInitialPage(self, initial_page):
-    soup = BeautifulSoup(initial_page.text, 'html.parser')
-    middleware_csrf = soup.find(
-      'input',
-      attrs = {'name': 'csrfmiddlewaretoken'}
-      )['value']
+    tree = HTMLParser(initial_page.text)
+    middleware_csrf = (
+      tree.css('input[name="csrfmiddlewaretoken"]')
+      .attributes['value']
+    )
 
     csrf = initial_page.cookies['csrftoken']
     session_id = initial_page.cookies['sessionid']
@@ -82,9 +81,9 @@ class SUAP:
     try:
       session_id = res.cookies['sessionid']
     except KeyError:
-      soup = BeautifulSoup(res.text, 'html.parser')
-      erro = soup.find(class_="errornote")
-      if erro == None:
+      tree = HTMLParser(res.text)
+      erro = tree.css(".errornote")
+      if not erro:
         raise LoginError("Não foi possivel logar no SUAP")
       msg_erro = erro.get_text().strip()
       try:
@@ -140,3 +139,4 @@ class SUAP:
     html_boletim = await self.__getBoletimPage()
     boletim = await self.__createBoletimJSON(html_boletim)
     return boletim
+

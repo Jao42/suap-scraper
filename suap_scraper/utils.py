@@ -1,4 +1,3 @@
-from bs4 import BeautifulSoup
 from selectolax.parser import HTMLParser
 import sys
 import json

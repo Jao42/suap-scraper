@@ -13,7 +13,7 @@ readme = "README.md"
 requires-python = ">=3.7"
 dependencies = [
     "httpx",
-    "beautifulsoup4",
+    "selectolax",
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
