@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+from selectolax.parser import HTMLParser
 import sys
 import json
 import asyncio
@@ -6,12 +7,12 @@ from suap_scraper.config import *
 
 def tratar_notas_detalhar(html_detalhar):
   notas = {}
-  soup = BeautifulSoup(html_detalhar, 'html.parser')
-  trs_soups = soup.tbody.find_all('tr')
-  for tr_soup in trs_soups:
-    tr_tds = tr_soup.find_all('td')
-    nota = tr_tds[4].get_text()
-    sigla_av = tr_tds[0].get_text()
+  tree = HTMLParser(html_detalhar)
+  trs_nodes = tree.css('tbody > tr')
+  for tr_node in trs_nodes:
+    tr_tds = tr_node.css('td')
+    nota = tr_tds[4].text()
+    sigla_av = tr_tds[0].text()
     notas[sigla_av] = None if nota == '-' else int(nota)
 
   return notas
@@ -22,12 +23,12 @@ async def tratar_etapas_tds(materia_etapas_tds, session):
   etapas_com_link = []
   etapas_td = zip(LABELS_NOTAS_TABLE, materia_etapas_tds)
   for etapa, td in etapas_td:
-    link = td.a
-    texto_td = td.get_text().strip()
+    link = td.css_first('a')
+    texto_td = td.text().strip()
     notas = texto_td
     if link is not None:
       etapas_com_link.append(etapa)
-      tasks.append(asyncio.create_task(session.get(LINK_SUAP + link['href'])))
+      tasks.append(asyncio.create_task(session.get(LINK_SUAP + link.attributes['href'])))
     etapas[etapa] = notas if notas != '-' else None
 
   responses = await asyncio.gather(*tasks)
@@ -39,8 +40,7 @@ async def tratar_etapas_tds(materia_etapas_tds, session):
 
 
 def tem_colspan(tag):
-  return tag.has_attr('colspan')
-
+  return ('colspan' in list(tag.attributes.keys()))
 
 def criar_indices_colspan(indices_notas, indices_colspans):
   indices_notas_materia = indices_notas[::]
@@ -53,20 +53,18 @@ def criar_indices_colspan(indices_notas, indices_colspans):
 
 def materias_etapas_tds(boletim_html):
 
-  soup = BeautifulSoup(boletim_html, 'html.parser')
-  corpo_tabela_soup = soup.tbody
-  materias_html = corpo_tabela_soup.find_all('tr')
-
+  tree = HTMLParser(boletim_html)
+  materias_tr = tree.css('.borda > tbody > tr')
   materias = {}
 
-  for i in range(len(materias_html)):
+  for i in range(len(materias_tr)):
 
-    soup = BeautifulSoup(str(materias_html[i]), 'html.parser')
-    materia_tds = soup.find_all('td')
+    materia_tr = materias_tr[i]
+    materia_tds = materia_tr.css('td')
 
-    disciplina_soup = materia_tds[1]
-    disciplina = (disciplina_soup
-    .get_text()
+    disciplina_node = materia_tds[1]
+    disciplina = (disciplina_node
+    .text()
     .replace('\n', '')
     .strip()
     .replace('  ', ''))
@@ -101,4 +99,3 @@ async def parsear_boletim(boletim_html, session):
   for i in range(len(disciplinas)):
     boletim[list(disciplinas)[i]] = responses[i]
   return boletim
-
