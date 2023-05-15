@@ -12,7 +12,7 @@ description = "Um scraper para o SUAP do IFPB"
 readme = "README.md"
 requires-python = ">=3.7"
 dependencies = [
-    "requests",
+    "httpx",
     "beautifulsoup4",
 ]
 classifiers = [
