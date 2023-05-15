@@ -4,7 +4,6 @@ from selectolax.parser import HTMLParser
 import sys
 from suap_scraper.utils import parsear_boletim
 import json
-import time
 import os
 from suap_scraper.config import *
 
@@ -102,31 +101,10 @@ class SUAP:
     if self.matricula is None:
       logged = await self.__getInitialPage()
       self.matricula = logged.headers.get('user')
-    req_json = REQ_JSON_BOLETIM
-    req_json["referrer"] = (LINK_SUAP + "/edu/aluno/"
-    + str(self.matricula)
-    + "/?tab=boletim"
-    )
 
-    req = self.session.build_request("GET",
-                           LINK_SUAP + "/edu/aluno/"
-                           +str(self.matricula)
-                           +"/?tab=boletim",
-                           cookies={
-                             'sessionid': self.session_id,
-                             'csrftoken': self.csrf
-                           },
-                           headers=HEADER_BOLETIM,
-                           json=req_json
-                           )
-    res = ''
-    html_content = ''
-    while req is not None:
-      res = await self.session.send(req)
-      req = res.next_request
-    html_content = res.text
-
-    return html_content
+    res = await self.session.get(LINK_SUAP + "/edu/aluno/" + str(self.matricula) +"/?tab=boletim")
+    boletim_html = res.text
+    return boletim_html
 
   async def __createBoletimJSON(self, html_content):
     dic_materias = await parsear_boletim(html_content, self.session)
