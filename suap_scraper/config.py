@@ -1,4 +1,4 @@
-UA_PADRAO = {'User-Agent': 'Oi, eu sou um bot que raspa o SUAP do IFPB. Disponível em: https://github.com/Jao42/suap-scraper'}
+UA_PADRAO = {'User-Agent': 'Oi, eu sou um bot que raspa o SUAP do IFPB. Disponivel em: https://github.com/Jao42/suap-scraper'}
 
 HEADER_LOGIN = {
   "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
