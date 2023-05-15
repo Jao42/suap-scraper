@@ -16,22 +16,25 @@ def tratar_notas_detalhar(html_detalhar):
 
   return notas
 
-
 async def tratar_etapas_tds(materia_etapas_tds, session):
   etapas = {}
+  tasks = []
+  etapas_com_link = []
   etapas_td = zip(LABELS_NOTAS_TABLE, materia_etapas_tds)
   for etapa, td in etapas_td:
     link = td.a
     texto_td = td.get_text().strip()
-    notas = ''
+    notas = texto_td
     if link is not None:
-      req_detalhar = await session.get(LINK_SUAP + link['href']
-        )
-      html_detalhar = req_detalhar.text
-      notas = tratar_notas_detalhar(html_detalhar)
-    else:
-      notas = texto_td
+      etapas_com_link.append(etapa)
+      tasks.append(asyncio.create_task(session.get(LINK_SUAP + link['href'])))
     etapas[etapa] = notas if notas != '-' else None
+
+  responses = await asyncio.gather(*tasks)
+  for i in range(len(etapas_com_link)):
+    html_detalhar = responses[i].text
+    notas = tratar_notas_detalhar(html_detalhar)
+    etapas[etapas_com_link[i]] = notas
   return etapas
 
 
@@ -82,11 +85,20 @@ def materias_etapas_tds(boletim_html):
 
 async def parsear_boletim(boletim_html, session):
   materias = materias_etapas_tds(boletim_html)
+  tasks = []
   boletim = {}
+  disciplinas = materias.keys()
+
   for disciplina, materia_etapas_tds in materias.items():
-    boletim[disciplina] = await tratar_etapas_tds(
+    tasks.append(
+      asyncio.create_task(
+        tratar_etapas_tds(
       materia_etapas_tds,
       session
-    )
+      )
+    ))
+  responses = await asyncio.gather(*tasks)
+  for i in range(len(disciplinas)):
+    boletim[list(disciplinas)[i]] = responses[i]
   return boletim
 
