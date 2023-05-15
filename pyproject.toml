@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "suap_scraper"
-version = "0.0.6.2"
+version = "0.0.6.3"
 authors = [
   { name="Jao42", email="cavalcante.joao@protonmail.ch" },
 ]
