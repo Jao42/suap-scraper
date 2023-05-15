@@ -33,10 +33,6 @@ class SUAP:
   async def loginSessionId(self, session_id, user_agent=UA_PADRAO):
     self.session_id = session_id
     self.session.cookies['sessionid'] = self.session_id
-    logged = await self.__getInitialPage()
-    self.matricula = logged.headers.get('user')
-    self.csrf = ''
-    self.senha = ''
 
   async def __getInitialPage(self):
     res = await self.session.get(LINK_SUAP)
@@ -103,6 +99,9 @@ class SUAP:
     return [ session_id, csrf ]
 
   async def __getBoletimPage(self):
+    if self.matricula is None:
+      logged = await self.__getInitialPage()
+      self.matricula = logged.headers.get('user')
     req_json = REQ_JSON_BOLETIM
     req_json["referrer"] = (LINK_SUAP + "/edu/aluno/"
     + str(self.matricula)
