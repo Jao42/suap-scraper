@@ -20,6 +20,10 @@ class SUAP:
     self.user_agent = user_agent
     self.session = httpx.AsyncClient()
     self.session.headers.update(user_agent)
+    self.session_id = None
+    self.matricula = None
+    self.csrf = None
+    self.senha = None
 
   async def loginCredenciais(self, matricula, senha, user_agent=UA_PADRAO):
     self.matricula = matricula
