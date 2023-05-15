@@ -1,5 +1,6 @@
 import httpx
 import asyncio
+from selectolax.parser import HTMLParser
 import sys
 from suap_scraper.utils import parsear_boletim
 import json
